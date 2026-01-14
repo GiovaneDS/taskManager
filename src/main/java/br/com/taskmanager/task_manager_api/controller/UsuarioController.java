@@ -1,7 +1,10 @@
 package br.com.taskmanager.task_manager_api.controller;
 
-import br.com.taskmanager.task_manager_api.domain.entity.Usuario;
+import br.com.taskmanager.task_manager_api.controller.dto.request.UsuarioCreateRequestDTO;
+import br.com.taskmanager.task_manager_api.controller.dto.request.UsuarioUpdateRequestDTO;
+import br.com.taskmanager.task_manager_api.controller.dto.response.UsuarioResponseDTO;
 import br.com.taskmanager.task_manager_api.service.UsuarioService;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +21,18 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        return usuarioService.criarUsuario(usuario);
+    public UsuarioResponseDTO criar(
+            @RequestBody @Valid UsuarioCreateRequestDTO dto) {
+
+        return usuarioService.criarUsuario(dto);
     }
+
+    @PutMapping("/{id}")
+    public UsuarioResponseDTO atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid UsuarioUpdateRequestDTO dto) {
+
+        return usuarioService.atualizar(id, dto);
+    }
+
 }

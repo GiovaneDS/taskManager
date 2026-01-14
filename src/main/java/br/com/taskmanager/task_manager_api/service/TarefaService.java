@@ -1,10 +1,14 @@
 package br.com.taskmanager.task_manager_api.service;
 
+import br.com.taskmanager.task_manager_api.controller.dto.request.TarefaCreateRequestDTO;
+import br.com.taskmanager.task_manager_api.controller.dto.response.TarefaResponseDTO;
 import br.com.taskmanager.task_manager_api.domain.entity.HistoricoTarefa;
+import br.com.taskmanager.task_manager_api.domain.entity.Projeto;
 import br.com.taskmanager.task_manager_api.domain.entity.Tarefa;
 import br.com.taskmanager.task_manager_api.domain.entity.Usuario;
 import br.com.taskmanager.task_manager_api.domain.enums.StatusTarefa;
 import br.com.taskmanager.task_manager_api.domain.repository.HistoricoTarefaRepository;
+import br.com.taskmanager.task_manager_api.domain.repository.ProjetoRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.TarefaRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
 import br.com.taskmanager.task_manager_api.security.SecurityUtils;
@@ -19,37 +23,70 @@ public class TarefaService {
 
     private final TarefaRepository tarefaRepository;
     private final HistoricoTarefaRepository historicoRepository;
-    private final UsuarioRepository usuarioRepository;    
+    private final UsuarioRepository usuarioRepository; 
+    private final ProjetoRepository projetoRepository;   
 
 
     public TarefaService(
             TarefaRepository tarefaRepository,
             HistoricoTarefaRepository historicoRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            ProjetoRepository projetoRepository) {
 
         this.tarefaRepository = tarefaRepository;
         this.historicoRepository = historicoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.projetoRepository = projetoRepository;
     }
 
 
-    public Tarefa criar(Tarefa tarefa) {
-        return tarefaRepository.save(tarefa);
+    public TarefaResponseDTO criar(TarefaCreateRequestDTO dto) {
+
+        Projeto projeto = projetoRepository.findById(dto.getProjetoId())
+            .orElseThrow(() -> new RuntimeException("Projeto não encontrado"));
+
+        Usuario responsavel = null;
+        if (dto.getResponsavelId() != null) {
+            responsavel = usuarioRepository.findById(dto.getResponsavelId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        }
+
+        Tarefa tarefa = new Tarefa();
+        tarefa.setTitulo(dto.getTitulo());
+        tarefa.setDescricao(dto.getDescricao());
+        tarefa.setProjeto(projeto);
+        tarefa.setResponsavel(responsavel);
+        tarefa.setStatus(StatusTarefa.BACKLOG);
+        tarefa.setDataCriacao(LocalDateTime.now());
+
+        Tarefa salva = tarefaRepository.save(tarefa);
+
+        return mapToResponseDTO(salva);
     }
 
-    public List<Tarefa> listarPorProjeto(Long projetoId) {
-        return tarefaRepository.findByProjetoId(projetoId);
+    // =========================
+    // LIST
+    // =========================
+    public List<TarefaResponseDTO> listarPorProjeto(Long projetoId) {
+
+        return tarefaRepository.findByProjetoId(projetoId)
+            .stream()
+            .map(this::mapToResponseDTO)
+            .toList();
     }
 
-    public Tarefa moverStatus(Long tarefaId, StatusTarefa novoStatus) {
+    // =========================
+    // STATUS
+    // =========================
+    public TarefaResponseDTO moverStatus(Long tarefaId, StatusTarefa novoStatus) {
 
         String username = SecurityUtils.getUsernameLogado();
 
         Usuario usuario = usuarioRepository.findByEmail(username)
-                .orElse(null);
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
-                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+            .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
         StatusTarefa statusAnterior = tarefa.getStatus();
 
@@ -60,17 +97,30 @@ public class TarefaService {
         tarefa.setStatus(novoStatus);
         tarefaRepository.save(tarefa);
 
-        // REGISTRA HISTÓRICO
         HistoricoTarefa historico = new HistoricoTarefa();
         historico.setTarefa(tarefa);
         historico.setStatusAnterior(statusAnterior);
         historico.setStatusNovo(novoStatus);
-
-        // Por enquanto usuário nulo (login vem depois)
         historico.setUsuario(usuario);
 
         historicoRepository.save(historico);
 
-        return tarefa;
+        return mapToResponseDTO(tarefa);
+    }
+
+    // =========================
+    // MAPPER
+    // =========================
+    private TarefaResponseDTO mapToResponseDTO(Tarefa tarefa) {
+        return new TarefaResponseDTO(
+            tarefa.getId(),
+            tarefa.getTitulo(),
+            tarefa.getDescricao(),
+            tarefa.getStatus().name(),
+            null, // projeto DTO (se quiser, extraímos)
+            null, // responsável DTO (idem)
+            tarefa.getDataCriacao(),
+            tarefa.getDataConclusao()
+        );
     }
 }

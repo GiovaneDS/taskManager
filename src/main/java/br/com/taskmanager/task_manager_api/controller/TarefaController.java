@@ -1,8 +1,10 @@
 package br.com.taskmanager.task_manager_api.controller;
 
-import br.com.taskmanager.task_manager_api.controller.dto.AlterarStatusTarefaDTO;
-import br.com.taskmanager.task_manager_api.domain.entity.Tarefa;
+import br.com.taskmanager.task_manager_api.controller.dto.request.TarefaCreateRequestDTO;
+import br.com.taskmanager.task_manager_api.controller.dto.request.TarefaUpdateStatusRequestDTO;
+import br.com.taskmanager.task_manager_api.controller.dto.response.TarefaResponseDTO;
 import br.com.taskmanager.task_manager_api.service.TarefaService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,36 +13,40 @@ import java.util.List;
 @RequestMapping("/api/tarefas")
 public class TarefaController {
 
-    private final TarefaService service;
+    private final TarefaService tarefaService;
 
-    public TarefaController(TarefaService service) {
-        this.service = service;
+    public TarefaController(TarefaService tarefaService) {
+        this.tarefaService = tarefaService;
     }
 
     // ======================
     // CRIAR TAREFA
     // ======================
     @PostMapping
-    public Tarefa criar(@RequestBody Tarefa tarefa) {
-        return service.criar(tarefa);
+    public TarefaResponseDTO criar(
+            @RequestBody @Valid TarefaCreateRequestDTO dto) {
+
+        return tarefaService.criar(dto);
     }
 
     // ======================
     // LISTAR POR PROJETO
     // ======================
-    @GetMapping("/projeto/{id}")
-    public List<Tarefa> listarPorProjeto(@PathVariable Long id) {
-        return service.listarPorProjeto(id);
+    @GetMapping("/projeto/{projetoId}")
+    public List<TarefaResponseDTO> listarPorProjeto(
+            @PathVariable Long projetoId) {
+
+        return tarefaService.listarPorProjeto(projetoId);
     }
 
     // ======================
     // MOVER STATUS
     // ======================
     @PutMapping("/{id}/status")
-    public Tarefa moverStatus(
+    public TarefaResponseDTO moverStatus(
             @PathVariable Long id,
-            @RequestBody AlterarStatusTarefaDTO dto) {
+            @RequestBody @Valid TarefaUpdateStatusRequestDTO dto) {
 
-        return service.moverStatus(id, dto.getStatus());
+        return tarefaService.moverStatus(id, dto.getStatus());
     }
 }

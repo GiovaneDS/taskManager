@@ -12,6 +12,8 @@ import br.com.taskmanager.task_manager_api.domain.repository.ProjetoRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.TarefaRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
 import br.com.taskmanager.task_manager_api.security.SecurityUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
 
@@ -67,12 +69,13 @@ public class TarefaService {
     // =========================
     // LIST
     // =========================
-    public List<TarefaResponseDTO> listarPorProjeto(Long projetoId) {
+    public Page<TarefaResponseDTO> listarPorProjeto(
+            Long projetoId,
+            Pageable pageable) {
 
-        return tarefaRepository.findByProjetoId(projetoId)
-            .stream()
-            .map(this::mapToResponseDTO)
-            .toList();
+        return tarefaRepository
+            .findByProjetoId(projetoId, pageable)
+            .map(this::mapToResponseDTO);
     }
 
     // =========================

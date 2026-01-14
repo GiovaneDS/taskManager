@@ -1,7 +1,7 @@
 package br.com.taskmanager.task_manager_api.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.taskmanager.task_manager_api.controller.dto.response.HistoricoTarefaResponseDTO;
@@ -22,12 +22,13 @@ public class HistoricoTarefaService {
         this.historicoRepository = historicoRepository;
     }
 
-    public List<HistoricoTarefaResponseDTO> buscarHistoricoPorTarefa(Long tarefaId) {
+    public Page<HistoricoTarefaResponseDTO> buscarHistoricoPorTarefa(
+            Long tarefaId,
+            Pageable pageable) {
 
-        return historicoRepository.findByTarefaIdOrderByDataEventoAsc(tarefaId)
-            .stream()
-            .map(this::mapToDTO)
-            .toList();
+        return historicoRepository
+            .findByTarefaId(tarefaId, pageable)
+            .map(this::mapToDTO);
     }
 
     // ==========================

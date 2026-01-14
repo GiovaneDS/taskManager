@@ -6,8 +6,9 @@ import br.com.taskmanager.task_manager_api.controller.dto.response.TarefaRespons
 import br.com.taskmanager.task_manager_api.service.TarefaService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/api/tarefas")
@@ -31,13 +32,18 @@ public class TarefaController {
 
     // ======================
     // LISTAR POR PROJETO
-    // ======================
+    // ======================    
     @GetMapping("/projeto/{projetoId}")
-    public List<TarefaResponseDTO> listarPorProjeto(
-            @PathVariable Long projetoId) {
-
-        return tarefaService.listarPorProjeto(projetoId);
+    public Page<TarefaResponseDTO> listarPorProjeto(
+            @PathVariable Long projetoId,
+            @PageableDefault(
+                size = 10,
+                sort = "dataCriacao"
+            ) Pageable pageable) {
+    
+        return tarefaService.listarPorProjeto(projetoId, pageable);
     }
+    
 
     // ======================
     // MOVER STATUS

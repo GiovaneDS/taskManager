@@ -1,10 +1,11 @@
 package br.com.taskmanager.task_manager_api.controller;
 
-import br.com.taskmanager.task_manager_api.controller.dto.LoginRequest;
+import br.com.taskmanager.task_manager_api.controller.dto.AuthRequest;
 import br.com.taskmanager.task_manager_api.security.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,22 +14,29 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtService jwtService,
+                          UserDetailsService userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public String login(@RequestBody AuthRequest request) {
 
-        Authentication auth = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.username,
-                        request.password
+                        request.getUsername(),
+                        request.getPassword()
                 )
         );
 
-        return jwtService.gerarToken(auth.getName());
+        UserDetails userDetails =
+                userDetailsService.loadUserByUsername(request.getUsername());
+
+        return jwtService.generateToken(userDetails);
     }
 }

@@ -1,7 +1,7 @@
 package br.com.taskmanager.task_manager_api.controller;
 
-import br.com.taskmanager.task_manager_api.domain.entity.HistoricoTarefa;
-import br.com.taskmanager.task_manager_api.domain.repository.HistoricoTarefaRepository;
+import br.com.taskmanager.task_manager_api.controller.dto.response.HistoricoTarefaResponseDTO;
+import br.com.taskmanager.task_manager_api.service.HistoricoTarefaService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,14 +10,16 @@ import java.util.List;
 @RequestMapping("/api/tarefas/{tarefaId}/historico")
 public class HistoricoTarefaController {
 
-    private final HistoricoTarefaRepository repository;
+    private final HistoricoTarefaService historicoTarefaService;
 
-    public HistoricoTarefaController(HistoricoTarefaRepository repository) {
-        this.repository = repository;
+    public HistoricoTarefaController(HistoricoTarefaService historicoTarefaService) {
+        this.historicoTarefaService = historicoTarefaService;
     }
 
     @GetMapping
-    public List<HistoricoTarefa> listar(@PathVariable Long tarefaId) {
-        return repository.findByTarefaIdOrderByDataEventoAsc(tarefaId);
+    public List<HistoricoTarefaResponseDTO> listarHistorico(
+            @PathVariable Long tarefaId) {
+
+        return historicoTarefaService.buscarHistoricoPorTarefa(tarefaId);
     }
 }

@@ -1,7 +1,8 @@
 package br.com.taskmanager.task_manager_api.controller;
 
 import br.com.taskmanager.task_manager_api.domain.entity.Usuario;
-import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
+import br.com.taskmanager.task_manager_api.service.UsuarioService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,22 +11,14 @@ import java.util.List;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    private final UsuarioRepository repository;
+    private final UsuarioService usuarioService;
 
-    // Construtor usado pelo Spring para injeção de dependência
-    public UsuarioController(UsuarioRepository repository) {
-        this.repository = repository;
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
-    // GET http://localhost:8081/api/usuarios
-    @GetMapping
-    public List<Usuario> listar() {
-        return repository.findAll();
-    }
-
-    // POST http://localhost:8081/api/usuarios
     @PostMapping
     public Usuario criar(@RequestBody Usuario usuario) {
-        return repository.save(usuario);
+        return usuarioService.criarUsuario(usuario);
     }
 }

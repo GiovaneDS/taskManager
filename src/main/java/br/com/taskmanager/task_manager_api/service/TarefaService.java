@@ -11,14 +11,16 @@ import br.com.taskmanager.task_manager_api.domain.repository.HistoricoTarefaRepo
 import br.com.taskmanager.task_manager_api.domain.repository.ProjetoRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.TarefaRepository;
 import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
+import br.com.taskmanager.task_manager_api.exception.ResourceNotFoundException;
 import br.com.taskmanager.task_manager_api.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import static br.com.taskmanager.task_manager_api.domain.specification.TarefaSpecification.*;
+
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class TarefaService {
@@ -45,12 +47,13 @@ public class TarefaService {
     public TarefaResponseDTO criar(TarefaCreateRequestDTO dto) {
 
         Projeto projeto = projetoRepository.findById(dto.getProjetoId())
-            .orElseThrow(() -> new RuntimeException("Projeto não encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Projeto não encontrado"));
 
         Usuario responsavel = null;
         if (dto.getResponsavelId() != null) {
-            responsavel = usuarioRepository.findById(dto.getResponsavelId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            responsavel = usuarioRepository.findById(dto.getResponsavelId())                
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
         }
 
         Tarefa tarefa = new Tarefa();
@@ -86,10 +89,10 @@ public class TarefaService {
         String username = SecurityUtils.getUsernameLogado();
 
         Usuario usuario = usuarioRepository.findByEmail(username)
-            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
         Tarefa tarefa = tarefaRepository.findById(tarefaId)
-            .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tarefa não encontrada"));
 
         StatusTarefa statusAnterior = tarefa.getStatus();
 
@@ -126,4 +129,20 @@ public class TarefaService {
             tarefa.getDataConclusao()
         );
     }
+
+    public Page<TarefaResponseDTO> filtrar(
+            Long projetoId,
+            StatusTarefa status,
+            Long responsavelId,
+            Pageable pageable) {
+
+        Specification<Tarefa> spec = Specification
+                .where(porProjeto(projetoId))
+                .and(porStatus(status))
+                .and(porResponsavel(responsavelId));
+
+        return tarefaRepository
+                .findAll(spec, pageable)
+                .map(this::mapToResponseDTO);
+    }    
 }

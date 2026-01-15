@@ -5,6 +5,8 @@ import br.com.taskmanager.task_manager_api.controller.dto.request.UsuarioUpdateR
 import br.com.taskmanager.task_manager_api.controller.dto.response.UsuarioResponseDTO;
 import br.com.taskmanager.task_manager_api.domain.entity.Usuario;
 import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
+import br.com.taskmanager.task_manager_api.exception.ResourceNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +45,7 @@ public class UsuarioService {
         UsuarioUpdateRequestDTO dto) {
 
     Usuario usuario = usuarioRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
 
     usuario.setNome(dto.getNome());
     usuario.setAtivo(dto.isAtivo());

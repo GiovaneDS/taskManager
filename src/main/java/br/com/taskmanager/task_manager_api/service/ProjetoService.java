@@ -5,6 +5,10 @@ import br.com.taskmanager.task_manager_api.controller.dto.request.ProjetoUpdateR
 import br.com.taskmanager.task_manager_api.controller.dto.response.ProjetoResponseDTO;
 import br.com.taskmanager.task_manager_api.domain.entity.Projeto;
 import br.com.taskmanager.task_manager_api.domain.repository.ProjetoRepository;
+import br.com.taskmanager.task_manager_api.exception.ResourceNotFoundException;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,7 +40,7 @@ public class ProjetoService {
             ProjetoUpdateRequestDTO dto) {
 
         Projeto projeto = projetoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Projeto não encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Projeto não encontrado"));
 
         projeto.setNome(dto.getNome());
         projeto.setDescricao(dto.getDescricao());
@@ -49,5 +53,25 @@ public class ProjetoService {
             salvo.getDescricao()
         );
     }
+
+    public List<ProjetoResponseDTO> listar() {
+        return projetoRepository.findAll()
+            .stream()
+            .map(p -> new ProjetoResponseDTO(
+                p.getId(),
+                p.getNome(),
+                p.getDescricao()
+            ))
+            .toList();
+    }
+
+    public void deletar(Long id) {
+
+        Projeto projeto = projetoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Projeto não encontrado"));
+    
+        projetoRepository.delete(projeto);
+    }
+    
 
 }

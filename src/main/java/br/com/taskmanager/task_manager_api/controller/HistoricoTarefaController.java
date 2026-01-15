@@ -5,6 +5,7 @@ import br.com.taskmanager.task_manager_api.service.HistoricoTarefaService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/tarefas/{tarefaId}/historico")
@@ -16,7 +17,7 @@ public class HistoricoTarefaController {
         this.historicoTarefaService = historicoTarefaService;
     }
 
-    @GetMapping("/api/tarefas/{tarefaId}/historico")
+    @PreAuthorize("hasRole('USER')")    
     public Page<HistoricoTarefaResponseDTO> listarHistorico(
             @PathVariable Long tarefaId,
             Pageable pageable) {

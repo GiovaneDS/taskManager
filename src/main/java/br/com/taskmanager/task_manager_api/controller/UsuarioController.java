@@ -6,9 +6,8 @@ import br.com.taskmanager.task_manager_api.controller.dto.response.UsuarioRespon
 import br.com.taskmanager.task_manager_api.service.UsuarioService;
 import jakarta.validation.Valid;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -20,6 +19,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public UsuarioResponseDTO criar(
             @RequestBody @Valid UsuarioCreateRequestDTO dto) {
@@ -27,6 +27,7 @@ public class UsuarioController {
         return usuarioService.criarUsuario(dto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public UsuarioResponseDTO atualizar(
             @PathVariable Long id,

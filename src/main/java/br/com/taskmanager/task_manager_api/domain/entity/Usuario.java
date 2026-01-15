@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import br.com.taskmanager.task_manager_api.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -41,8 +42,9 @@ public class Usuario implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
+
 
     @Override
     @JsonIgnore
@@ -78,6 +80,12 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return ativo;
     }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+
 
     // getters e setters normais
 }

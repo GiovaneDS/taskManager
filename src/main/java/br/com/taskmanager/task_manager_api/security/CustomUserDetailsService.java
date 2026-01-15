@@ -1,6 +1,5 @@
 package br.com.taskmanager.task_manager_api.security;
 
-import br.com.taskmanager.task_manager_api.domain.entity.Usuario;
 import br.com.taskmanager.task_manager_api.domain.repository.UsuarioRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
